@@ -21,7 +21,7 @@ main{max-width:720px;margin:auto;padding:14px}
 label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
 input,textarea{font:inherit;width:100%;border:1px solid #cbd6df;border-radius:10px;padding:12px;background:#fff;color:var(--text);min-height:44px}
 input:focus,textarea:focus{outline:2px solid #8cc5e3;border-color:var(--blue)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid>div{min-width:0}.grid .full{grid-column:1/-1}input{min-width:0;max-width:100%}input[type=date]{display:block;width:100%;min-width:0;max-width:100%;padding-left:8px;padding-right:8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid>div{min-width:0}.grid .full{grid-column:1/-1}input{min-width:0;max-width:100%}input[type=date]{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding-left:4px;padding-right:4px;font-size:16px}
 .stampgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44px;font-weight:700;cursor:pointer}
 .stamp{background:#eaf3f8;color:#174f70;text-align:left;border:1px solid #cfe1ec}
@@ -47,17 +47,17 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
     <p class="note">※ 社員番号は記録者を区別するための項目です。現在の公開版は簡易アプリのため、社員番号だけでは本人確認やアクセス制限はできません。</p>
     <label>時刻を記録</label>
     <div class="stampgrid">
-      <button class="stamp" data-time="depart"><small>センター出発</small><strong id="time-depart">未記録</strong></button>
-      <button class="stamp" data-time="first"><small>1件目到着</small><strong id="time-first">未記録</strong></button>
-      <button class="stamp" data-time="last"><small>最終納品</small><strong id="time-last">未記録</strong></button>
-      <button class="stamp" data-time="return"><small>センター帰着</small><strong id="time-return">未記録</strong></button>
+      <div class="stamp"><small>センター出発</small><strong id="time-depart">未記録</strong></div>
+      <div class="stamp"><small>1件目到着</small><strong id="time-first">未記録</strong></div>
+      <div class="stamp"><small>最終納品</small><strong id="time-last">未記録</strong></div>
+      <div class="stamp"><small>センター帰着</small><strong id="time-return">未記録</strong></div>
     </div>
     <label for="breakMinutes">休憩時間（分）</label><input id="breakMinutes" type="number" min="0" step="1" placeholder="例：60">
   </section>
 
   <section class="card">
     <h2>走行距離（km）</h2>
-    <p class="sub">各地点のオドメーター数値を入力すると、対応する時刻も自動で記録します（既に時刻がある場合は上書きしません）。時刻ボタンで手動記録・修正もできます。</p>
+    <p class="sub">各地点のオドメーター数値を入力すると、対応する時刻も自動で記録します（既に時刻がある場合は上書きしません）。時刻は距離を入力した時点で自動記録され、手動タップでは変更されません。</p>
     <div class="grid">
       <div><label for="kmDepart">センター出発時</label><input id="kmDepart" type="number" min="0" step="0.1" placeholder="例：12540.2"></div>
       <div><label for="kmFirst">1件目</label><input id="kmFirst" type="number" min="0" step="0.1" placeholder="例：12548.6"></div>
@@ -105,9 +105,6 @@ function update(){
  $('returnKm').textContent=fmt(diff('kmLast','kmReturn'));
  timeKeys.forEach(k=>$('time-'+k).textContent=times[k]||'未記録');
 }
-document.querySelectorAll('[data-time]').forEach(btn=>btn.addEventListener('click',()=>{
- const k=btn.dataset.time, d=new Date();times[k]=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;update();$('status').textContent=`${btn.innerText.split('\n')[0]}を ${times[k]} に記録しました`;
-}));
 const kmTimeMap={kmDepart:'depart',kmFirst:'first',kmLast:'last',kmReturn:'return'};
 ['kmDepart','kmFirst','kmLast','kmReturn'].forEach(id=>$(id).addEventListener('input',()=>{
   const timeKey=kmTimeMap[id];
