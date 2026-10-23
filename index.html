@@ -40,7 +40,7 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
     <h2>今日の記録</h2>
     <div class="grid">
       <div><label for="workDate">日付</label><input id="workDate" type="date"></div>
-      <div><label for="routeName">コース・メモ（任意）</label><input id="routeName" inputmode="numeric" autocomplete="off" placeholder="例：123"></div>
+      <div><label for="routeName">コース</label><input id="routeName" inputmode="numeric" autocomplete="off" placeholder="例：123"></div>
       <div><label for="vehicleNo">車番</label><input id="vehicleNo" inputmode="numeric" autocomplete="off" placeholder="例：1234"></div>
       <div><label for="employeeNo">社員番号（記録者）</label><input id="employeeNo" inputmode="numeric" autocomplete="off" placeholder="例：123456"></div>
     </div>
@@ -59,10 +59,10 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
     <h2>走行距離（km）</h2>
     <p class="sub">各地点のオドメーター数値を入力すると、対応する時刻も自動で記録します（既に時刻がある場合は上書きしません）。時刻は距離を入力した時点で自動記録され、手動タップでは変更されません。</p>
     <div class="grid">
-      <div><label for="kmDepart">センター出発時</label><input id="kmDepart" type="number" min="0" step="0.1" placeholder="例：12540.2"></div>
-      <div><label for="kmFirst">1件目</label><input id="kmFirst" type="number" min="0" step="0.1" placeholder="例：12548.6"></div>
-      <div><label for="kmLast">最終納品先</label><input id="kmLast" type="number" min="0" step="0.1" placeholder="例：12591.4"></div>
-      <div><label for="kmReturn">センター帰着時</label><input id="kmReturn" type="number" min="0" step="0.1" placeholder="例：12610.8"></div>
+      <div><label for="kmDepart">センター出発時</label><input id="kmDepart" type="number" inputmode="numeric" min="0" step="1" placeholder="例：12540"></div>
+      <div><label for="kmFirst">1件目</label><input id="kmFirst" type="number" inputmode="numeric" min="0" step="1" placeholder="例：12548"></div>
+      <div><label for="kmLast">最終納品先</label><input id="kmLast" type="number" inputmode="numeric" min="0" step="1" placeholder="例：12591"></div>
+      <div><label for="kmReturn">センター帰着時</label><input id="kmReturn" type="number" inputmode="numeric" min="0" step="1" placeholder="例：12610"></div>
     </div>
     <div class="summary" style="margin-top:13px">
       <div class="metric"><span>総走行距離</span><strong id="totalKm">— km</strong></div>
@@ -70,7 +70,11 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
       <div class="metric"><span>1件目〜最終納品</span><strong id="deliveryKm">— km</strong></div>
       <div class="metric"><span>最終納品〜帰着</span><strong id="returnKm">— km</strong></div>
     </div>
-    <label for="memo">メモ（任意）</label><textarea id="memo" rows="2" placeholder="渋滞、待機、気づいたことなど"></textarea>
+    <h3 style="margin-top:18px">給油記録（任意）</h3>
+    <div class="grid">
+      <div><label for="fuelAmount">給油量（L）</label><input id="fuelAmount" type="number" inputmode="decimal" min="0" step="any" placeholder="例：35.68"></div>
+      <div><label for="fuelDistance">給油時の走行距離（km）</label><input id="fuelDistance" type="number" inputmode="numeric" min="0" step="1" placeholder="例：12580"></div>
+    </div>
     <button class="primary" id="saveBtn">この日の記録を保存</button>
     <div class="status" id="status" role="status"></div>
     <p class="note">※ 距離は両方の数値が入力されている区間だけ計算します。時刻は日付をまたぐ場合も経過時間として計算します。</p>
@@ -80,7 +84,7 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
     <h2>記録一覧</h2>
     <div class="toolbar">
       <button class="secondary" id="exportBtn">CSVを書き出す</button>
-      <button class="secondary" id="textExportBtn">メモ向けテキスト</button>
+      <button class="secondary" id="textExportBtn">テキストを書き出す</button>
       <button class="secondary" id="newBtn">新しい記録</button>
     </div>
     <div id="records"></div>
@@ -89,7 +93,7 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
 </main>
 <script>
 const $=id=>document.getElementById(id);
-const fields=['workDate','routeName','vehicleNo','employeeNo','breakMinutes','kmDepart','kmFirst','kmLast','kmReturn','memo'];
+const fields=['workDate','routeName','vehicleNo','employeeNo','breakMinutes','kmDepart','kmFirst','kmLast','kmReturn','fuelAmount','fuelDistance'];
 // コース・車番・社員番号は数字のみ入力できるようにする（先頭の0は保持）
 ['routeName','vehicleNo','employeeNo'].forEach(id=>$(id).addEventListener('input',()=>{const pos=$(id).selectionStart;const before=$(id).value;const after=before.replace(/[^0-9]/g,'');if(before!==after){$(id).value=after;try{$(id).setSelectionRange(pos-(before.length-after.length),pos-(before.length-after.length))}catch(e){}}}));
 const timeKeys=['depart','first','last','return'];
@@ -118,7 +122,7 @@ const kmTimeMap={kmDepart:'depart',kmFirst:'first',kmLast:'last',kmReturn:'retur
   }
   update();
 }));
-function collect(){return {id:editingId||String(Date.now()),date:$('workDate').value||today(),route:$('routeName').value,vehicleNo:$('vehicleNo').value.trim(),employeeNo:$('employeeNo').value.trim(),times:{...times},breakMinutes:$('breakMinutes').value,kmDepart:$('kmDepart').value,kmFirst:$('kmFirst').value,kmLast:$('kmLast').value,kmReturn:$('kmReturn').value,memo:$('memo').value,updatedAt:new Date().toISOString()}}
+function collect(){return {id:editingId||String(Date.now()),date:$('workDate').value||today(),route:$('routeName').value,vehicleNo:$('vehicleNo').value.trim(),employeeNo:$('employeeNo').value.trim(),times:{...times},breakMinutes:$('breakMinutes').value,kmDepart:$('kmDepart').value,kmFirst:$('kmFirst').value,kmLast:$('kmLast').value,kmReturn:$('kmReturn').value,fuelAmount:$('fuelAmount').value,fuelDistance:$('fuelDistance').value,updatedAt:new Date().toISOString()}}
 function getRecords(){try{return JSON.parse(localStorage.getItem('truckDistanceTimeRecords')||'[]')}catch(e){return []}}
 function setRecords(a){localStorage.setItem('truckDistanceTimeRecords',JSON.stringify(a))}
 function resetForm(){editingId=null;fields.forEach(id=>$(id).value='');$('workDate').value=today();times={depart:'',first:'',last:'',return:''};$('status').textContent='';update();$('saveBtn').textContent='この日の記録を保存'}
@@ -128,7 +132,7 @@ $('saveBtn').addEventListener('click',()=>{
  if(idx>=0)arr[idx]=r;else arr.unshift(r);
  setRecords(arr);$('status').textContent='保存しました';renderRecords();editingId=null;$('saveBtn').textContent='この日の記録を保存';
 });
-function loadRecord(r){editingId=r.id;$('workDate').value=r.date||today();$('routeName').value=r.route||'';$('vehicleNo').value=r.vehicleNo||'';$('employeeNo').value=r.employeeNo||'';$('breakMinutes').value=r.breakMinutes||'';$('kmDepart').value=r.kmDepart||'';$('kmFirst').value=r.kmFirst||'';$('kmLast').value=r.kmLast||'';$('kmReturn').value=r.kmReturn||'';$('memo').value=r.memo||'';times={depart:'',first:'',last:'',return:'',...(r.times||{})};$('saveBtn').textContent='変更を保存';$('status').textContent='記録を読み込みました';update();window.scrollTo({top:0,behavior:'smooth'})}
+function loadRecord(r){editingId=r.id;$('workDate').value=r.date||today();$('routeName').value=r.route||'';$('vehicleNo').value=r.vehicleNo||'';$('employeeNo').value=r.employeeNo||'';$('breakMinutes').value=r.breakMinutes||'';$('kmDepart').value=r.kmDepart||'';$('kmFirst').value=r.kmFirst||'';$('kmLast').value=r.kmLast||'';$('kmReturn').value=r.kmReturn||'';$('fuelAmount').value=r.fuelAmount||'';$('fuelDistance').value=r.fuelDistance||'';times={depart:'',first:'',last:'',return:'',...(r.times||{})};$('saveBtn').textContent='変更を保存';$('status').textContent='記録を読み込みました';update();window.scrollTo({top:0,behavior:'smooth'})}
 function renderRecords(){
  const arr=getRecords(),root=$('records');root.innerHTML='';
  if(!arr.length){root.innerHTML='<div class="empty">まだ記録がありません。<br>上で時刻と距離を入力して保存してください。</div>';return}
@@ -150,9 +154,9 @@ function renderRecords(){
 $('newBtn').addEventListener('click',()=>{resetForm();window.scrollTo({top:0,behavior:'smooth'})});
 $('exportBtn').addEventListener('click',()=>{
  const arr=getRecords();if(!arr.length){alert('書き出す記録がありません');return}
- const headers=['日付','コース・メモ','車番','社員番号','出発時刻','1件目時刻','最終納品時刻','帰着時刻','休憩(分)','出発距離(km)','1件目距離(km)','最終納品距離(km)','帰着距離(km)','総走行距離(km)','メモ'];
+ const headers=['日付','コース','車番','社員番号','出発時刻','1件目時刻','最終納品時刻','帰着時刻','休憩(分)','出発距離(km)','1件目距離(km)','最終納品距離(km)','帰着距離(km)','総走行距離(km)','給油量(L)','給油時走行距離(km)'];
  const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
- const rows=arr.map(r=>[r.date,r.route,r.vehicleNo,r.employeeNo,r.times?.depart,r.times?.first,r.times?.last,r.times?.return,r.breakMinutes,r.kmDepart,r.kmFirst,r.kmLast,r.kmReturn,(r.kmDepart!==''&&r.kmReturn!==''&&Number(r.kmReturn)>=Number(r.kmDepart))?Number(r.kmReturn)-Number(r.kmDepart):'',r.memo].map(esc).join(','));
+ const rows=arr.map(r=>[r.date,r.route,r.vehicleNo,r.employeeNo,r.times?.depart,r.times?.first,r.times?.last,r.times?.return,r.breakMinutes,r.kmDepart,r.kmFirst,r.kmLast,r.kmReturn,(r.kmDepart!==''&&r.kmReturn!==''&&Number(r.kmReturn)>=Number(r.kmDepart))?Number(r.kmReturn)-Number(r.kmDepart):'',r.fuelAmount,r.fuelDistance].map(esc).join(','));
  const blob=new Blob(['\ufeff'+[headers.map(esc).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='トラック距離時間メモ.csv';a.click();URL.revokeObjectURL(url);
 });
@@ -170,7 +174,8 @@ $('textExportBtn').addEventListener('click',()=>{
    `帰着：${t.return||'—'}（${r.kmReturn||'—'} km）`,
    `総走行距離：${distance(r.kmDepart,r.kmReturn)}`,
    `休憩：${r.breakMinutes||'—'} 分`,
-   `メモ：${r.memo||'—'}`
+   `給油量：${r.fuelAmount||'—'} L`,
+   `給油時の走行距離：${r.fuelDistance||'—'} km`
   ].join('\n');
  });
  const blob=new Blob([lines.join('\n\n--------------------\n\n')],{type:'text/plain;charset=utf-8;'});
