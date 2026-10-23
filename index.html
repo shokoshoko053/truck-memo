@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#173b57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="距離時間メモ">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>トラック距離・時間メモ</title>
+<style>
+:root{--navy:#173b57;--blue:#246b91;--bg:#f3f6f8;--line:#dce4ea;--text:#17232d;--muted:#657582;--green:#16815d;--red:#b33d3d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--text);padding-bottom:28px}
+header{background:linear-gradient(135deg,#173b57,#246b91);color:white;padding:22px 18px 20px;border-radius:0 0 22px 22px}
+header .eyebrow{font-size:12px;opacity:.8;letter-spacing:.08em}h1{font-size:22px;margin:5px 0 7px}header p{font-size:13px;margin:0;opacity:.9}
+main{max-width:720px;margin:auto;padding:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 13px;box-shadow:0 3px 12px #163b5710}
+.card h2{font-size:16px;margin:0 0 13px}.sub{font-size:12px;color:var(--muted);margin-top:-7px;margin-bottom:12px}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
+input,textarea{font:inherit;width:100%;border:1px solid #cbd6df;border-radius:10px;padding:12px;background:#fff;color:var(--text);min-height:44px}
+input:focus,textarea:focus{outline:2px solid #8cc5e3;border-color:var(--blue)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid .full{grid-column:1/-1}
+.stampgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44px;font-weight:700;cursor:pointer}
+.stamp{background:#eaf3f8;color:#174f70;text-align:left;border:1px solid #cfe1ec}
+.stamp small{display:block;font-size:11px;font-weight:500;color:#557182;margin-bottom:4px}
+.stamp strong{font-size:16px}.primary{background:var(--navy);color:#fff;width:100%;margin-top:14px}.secondary{background:#e9eef2;color:#304454}.danger{background:#fff0f0;color:var(--red)}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:9px}.metric{background:#f2f7fa;border-radius:12px;padding:12px}.metric span{font-size:12px;color:var(--muted);display:block}.metric strong{font-size:21px;display:block;margin-top:3px}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.record{border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:10px}.recordtop{display:flex;justify-content:space-between;gap:8px;align-items:start}.recordtop strong{font-size:14px}.recordtop small{color:var(--muted)}.recordstats{font-size:13px;line-height:1.8;margin-top:8px}.recordactions{display:flex;gap:8px;margin-top:10px}.recordactions button{flex:1;font-size:12px;min-height:38px;padding:8px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar button{flex:1}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 8px}.status{font-size:12px;color:var(--green);min-height:18px;margin-top:8px}
+@media(min-width:600px){main{padding:20px}.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}.two .card{margin-bottom:13px}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">DRIVER'S LOG</div><h1>🚚 距離・時間メモ</h1><p>時刻はボタンで記録、距離は数字を入力。記録はこの端末に保存されます。</p></header>
+<main>
+  <section class="card">
+    <h2>今日の記録</h2>
+    <div class="grid">
+      <div><label for="workDate">日付</label><input id="workDate" type="date"></div>
+      <div><label for="routeName">コース・メモ（任意）</label><input id="routeName" placeholder="例：Aコース"></div>
+    </div>
+    <label>時刻を記録</label>
+    <div class="stampgrid">
+      <button class="stamp" data-time="depart"><small>センター出発</small><strong id="time-depart">未記録</strong></button>
+      <button class="stamp" data-time="first"><small>1件目到着</small><strong id="time-first">未記録</strong></button>
+      <button class="stamp" data-time="last"><small>最終納品</small><strong id="time-last">未記録</strong></button>
+      <button class="stamp" data-time="return"><small>センター帰着</small><strong id="time-return">未記録</strong></button>
+    </div>
+    <label for="breakMinutes">休憩時間（分）</label><input id="breakMinutes" type="number" min="0" step="1" placeholder="例：60">
+  </section>
+
+  <section class="card">
+    <h2>走行距離（km）</h2>
+    <p class="sub">各地点のオドメーター数値を入力してください。</p>
+    <div class="grid">
+      <div><label for="kmDepart">センター出発時</label><input id="kmDepart" type="number" min="0" step="0.1" placeholder="例：12540.2"></div>
+      <div><label for="kmFirst">1件目</label><input id="kmFirst" type="number" min="0" step="0.1" placeholder="例：12548.6"></div>
+      <div><label for="kmLast">最終納品先</label><input id="kmLast" type="number" min="0" step="0.1" placeholder="例：12591.4"></div>
+      <div><label for="kmReturn">センター帰着時</label><input id="kmReturn" type="number" min="0" step="0.1" placeholder="例：12610.8"></div>
+    </div>
+    <div class="summary" style="margin-top:13px">
+      <div class="metric"><span>総走行距離</span><strong id="totalKm">— km</strong></div>
+      <div class="metric"><span>出発〜1件目</span><strong id="firstKm">— km</strong></div>
+      <div class="metric"><span>1件目〜最終納品</span><strong id="deliveryKm">— km</strong></div>
+      <div class="metric"><span>最終納品〜帰着</span><strong id="returnKm">— km</strong></div>
+    </div>
+    <label for="memo">メモ（任意）</label><textarea id="memo" rows="2" placeholder="渋滞、待機、気づいたことなど"></textarea>
+    <button class="primary" id="saveBtn">この日の記録を保存</button>
+    <div class="status" id="status" role="status"></div>
+    <p class="note">※ 距離は両方の数値が入力されている区間だけ計算します。時刻は日付をまたぐ場合も経過時間として計算します。</p>
+  </section>
+
+  <section class="card">
+    <h2>記録一覧</h2>
+    <div class="toolbar">
+      <button class="secondary" id="exportBtn">CSVを書き出す</button>
+      <button class="secondary" id="newBtn">新しい記録</button>
+    </div>
+    <div id="records"></div>
+    <p class="note">保存先はこのブラウザ内です。ブラウザのデータ削除や端末変更で消えることがあるため、定期的にCSVを書き出してください。</p>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const fields=['workDate','routeName','breakMinutes','kmDepart','kmFirst','kmLast','kmReturn','memo'];
+const timeKeys=['depart','first','last','return'];
+let times={depart:'',first:'',last:'',return:''}, editingId=null;
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+$('workDate').value=today();
+const num=id=>{const v=$(id).value;return v===''?null:Number(v)};
+const fmt=n=>n===null||!Number.isFinite(n)?'—':`${n.toLocaleString('ja-JP',{maximumFractionDigits:1})} km`;
+function diff(a,b){const x=num(a),y=num(b);return x!==null&&y!==null&&y>=x?y-x:null}
+function duration(a,b){if(!times[a]||!times[b])return null;let [ah,am]=times[a].split(':').map(Number),[bh,bm]=times[b].split(':').map(Number);let m=bh*60+bm-(ah*60+am);if(m<0)m+=1440;return m}
+function fmtDuration(m){return m===null?'—':`${Math.floor(m/60)}時間${m%60}分`}
+function update(){
+ $('totalKm').textContent=fmt(diff('kmDepart','kmReturn'));
+ $('firstKm').textContent=fmt(diff('kmDepart','kmFirst'));
+ $('deliveryKm').textContent=fmt(diff('kmFirst','kmLast'));
+ $('returnKm').textContent=fmt(diff('kmLast','kmReturn'));
+ timeKeys.forEach(k=>$('time-'+k).textContent=times[k]||'未記録');
+}
+document.querySelectorAll('[data-time]').forEach(btn=>btn.addEventListener('click',()=>{
+ const k=btn.dataset.time, d=new Date();times[k]=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;update();$('status').textContent=`${btn.innerText.split('\n')[0]}を ${times[k]} に記録しました`;
+}));
+['kmDepart','kmFirst','kmLast','kmReturn'].forEach(id=>$(id).addEventListener('input',update));
+function collect(){return {id:editingId||String(Date.now()),date:$('workDate').value||today(),route:$('routeName').value, times:{...times},breakMinutes:$('breakMinutes').value,kmDepart:$('kmDepart').value,kmFirst:$('kmFirst').value,kmLast:$('kmLast').value,kmReturn:$('kmReturn').value,memo:$('memo').value,updatedAt:new Date().toISOString()}}
+function getRecords(){try{return JSON.parse(localStorage.getItem('truckDistanceTimeRecords')||'[]')}catch(e){return []}}
+function setRecords(a){localStorage.setItem('truckDistanceTimeRecords',JSON.stringify(a))}
+function resetForm(){editingId=null;fields.forEach(id=>$(id).value='');$('workDate').value=today();times={depart:'',first:'',last:'',return:''};$('status').textContent='';update();$('saveBtn').textContent='この日の記録を保存'}
+$('saveBtn').addEventListener('click',()=>{
+ const r=collect();if(!r.date){$('status').textContent='日付を入力してください';return}
+ let arr=getRecords(),idx=arr.findIndex(x=>x.id===r.id);
+ if(idx>=0)arr[idx]=r;else arr.unshift(r);
+ setRecords(arr);$('status').textContent='保存しました';renderRecords();editingId=null;$('saveBtn').textContent='この日の記録を保存';
+});
+function loadRecord(r){editingId=r.id;$('workDate').value=r.date||today();$('routeName').value=r.route||'';$('breakMinutes').value=r.breakMinutes||'';$('kmDepart').value=r.kmDepart||'';$('kmFirst').value=r.kmFirst||'';$('kmLast').value=r.kmLast||'';$('kmReturn').value=r.kmReturn||'';$('memo').value=r.memo||'';times={depart:'',first:'',last:'',return:'',...(r.times||{})};$('saveBtn').textContent='変更を保存';$('status').textContent='記録を読み込みました';update();window.scrollTo({top:0,behavior:'smooth'})}
+function renderRecords(){
+ const arr=getRecords(),root=$('records');root.innerHTML='';
+ if(!arr.length){root.innerHTML='<div class="empty">まだ記録がありません。<br>上で時刻と距離を入力して保存してください。</div>';return}
+ arr.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ arr.forEach(r=>{
+  const el=document.createElement('div');el.className='record';
+  const km=(r.kmDepart!==''&&r.kmReturn!==''&&Number(r.kmReturn)>=Number(r.kmDepart))?fmt(Number(r.kmReturn)-Number(r.kmDepart)):'距離未完了';
+  const t=r.times||{};
+  el.innerHTML=`<div class="recordtop"><div><strong></strong><br><small></small></div><strong class="km"></strong></div><div class="recordstats"></div><div class="recordactions"><button class="secondary edit">編集</button><button class="danger delete">削除</button></div>`;
+  el.querySelector('strong').textContent=r.date||'日付なし';el.querySelector('small').textContent=r.route||'コース名なし';el.querySelector('.km').textContent=km;
+  const stats=el.querySelector('.recordstats');
+  stats.textContent=`出発 ${t.depart||'—'}　1件目 ${t.first||'—'}\n最終 ${t.last||'—'}　帰着 ${t.return||'—'}\n休憩 ${r.breakMinutes||'—'} 分`;
+  stats.style.whiteSpace='pre-line';
+  el.querySelector('.edit').onclick=()=>loadRecord(r);
+  el.querySelector('.delete').onclick=()=>{if(confirm(`${r.date} の記録を削除しますか？`)){setRecords(getRecords().filter(x=>x.id!==r.id));renderRecords()}};
+  root.appendChild(el);
+ });
+}
+$('newBtn').addEventListener('click',()=>{resetForm();window.scrollTo({top:0,behavior:'smooth'})});
+$('exportBtn').addEventListener('click',()=>{
+ const arr=getRecords();if(!arr.length){alert('書き出す記録がありません');return}
+ const headers=['日付','コース・メモ','出発時刻','1件目時刻','最終納品時刻','帰着時刻','休憩(分)','出発距離(km)','1件目距離(km)','最終納品距離(km)','帰着距離(km)','総走行距離(km)','メモ'];
+ const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const rows=arr.map(r=>[r.date,r.route,r.times?.depart,r.times?.first,r.times?.last,r.times?.return,r.breakMinutes,r.kmDepart,r.kmFirst,r.kmLast,r.kmReturn,(r.kmDepart!==''&&r.kmReturn!==''&&Number(r.kmReturn)>=Number(r.kmDepart))?Number(r.kmReturn)-Number(r.kmDepart):'',r.memo].map(esc).join(','));
+ const blob=new Blob(['\ufeff'+[headers.map(esc).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='トラック距離時間メモ.csv';a.click();URL.revokeObjectURL(url);
+});
+update();renderRecords();
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
