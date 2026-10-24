@@ -1,4 +1,4 @@
-const CACHE_NAME = "truck-distance-time-v9-compact-time";
+const CACHE_NAME = "truck-distance-time-v10";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(FILES)));

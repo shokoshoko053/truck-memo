@@ -29,7 +29,7 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
 .stamp strong{font-size:16px}.primary{background:var(--navy);color:#fff;width:100%;margin-top:14px}.secondary{background:#e9eef2;color:#304454}.danger{background:#fff0f0;color:var(--red)}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:9px}.metric{background:#f2f7fa;border-radius:12px;padding:12px}.metric span{font-size:12px;color:var(--muted);display:block}.metric strong{font-size:21px;display:block;margin-top:3px}
 .note{font-size:12px;color:var(--muted);line-height:1.5}.record{border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:10px}.recordtop{display:flex;justify-content:space-between;gap:8px;align-items:start}.recordtop strong{font-size:14px}.recordtop small{color:var(--muted)}.recordstats{font-size:13px;line-height:1.8;margin-top:8px}.recordactions{display:flex;gap:8px;margin-top:10px}.recordactions button{flex:1;font-size:12px;min-height:38px;padding:8px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar button{flex:1}
-.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 8px}.status{font-size:12px;color:var(--green);min-height:18px;margin-top:8px}.save-indicator{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#edf7f2;color:#176448;font-size:13px;margin:10px 0 12px}.save-dot{width:9px;height:9px;border-radius:50%;background:#16815d;flex:none}.save-indicator.pending{background:#fff7e5;color:#805a0b}.save-indicator.pending .save-dot{background:#d69b18}.time-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.time-edit-grid>div{min-width:0;overflow:hidden}.time-edit-grid label{font-size:12px;margin:9px 0 4px;line-height:1.25}.time-edit-grid input[type=time]{display:block;width:100%;min-width:0;max-width:100%;min-height:38px;height:40px;padding:5px 2px;font-size:14px;border-radius:8px;letter-spacing:-.3px;-webkit-appearance:none;appearance:none}@media(max-width:380px){.time-edit-grid{gap:5px}.time-edit-grid input[type=time]{font-size:13px;padding-left:1px;padding-right:1px}}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 8px}.status{font-size:12px;color:var(--green);min-height:18px;margin-top:8px}.save-indicator{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#edf7f2;color:#176448;font-size:13px;margin:10px 0 12px}.save-dot{width:9px;height:9px;border-radius:50%;background:#16815d;flex:none}.save-indicator.pending{background:#fff7e5;color:#805a0b}.save-indicator.pending .save-dot{background:#d69b18}.time-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.time-edit-grid>div{min-width:0;overflow:hidden}.time-edit-grid label{font-size:12px;margin:9px 0 4px;line-height:1.25}.time-edit-grid input.time-display{display:block;width:100%;min-width:0;max-width:100%;min-height:34px;height:36px;padding:5px 6px;font-size:14px;border-radius:8px;letter-spacing:0;text-align:center;background:#f2f4f7;color:#344054;border:1px solid #d0d5dd;cursor:default}@media(max-width:380px){.time-edit-grid{gap:5px}.time-edit-grid input.time-display{font-size:13px;padding-left:2px;padding-right:2px}}
 @media(min-width:600px){main{padding:20px}.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}.two .card{margin-bottom:13px}}
 </style>
 </head>
@@ -47,10 +47,10 @@ button{font:inherit;border:0;border-radius:11px;padding:12px 13px;min-height:44p
     <p class="note">※ 社員番号は記録者を区別するための項目です。現在の公開版は簡易アプリのため、社員番号だけでは本人確認やアクセス制限はできません。</p>
     <label>時刻（自動記録後も手動で変更できます）</label>
     <div class="time-edit-grid">
-      <div><label for="timeDepartInput">センター出発</label><input id="timeDepartInput" type="time" aria-label="センター出発時刻"></div>
-      <div><label for="timeFirstInput">1件目到着</label><input id="timeFirstInput" type="time" aria-label="1件目到着時刻"></div>
-      <div><label for="timeLastInput">最終納品</label><input id="timeLastInput" type="time" aria-label="最終納品時刻"></div>
-      <div><label for="timeReturnInput">センター帰着</label><input id="timeReturnInput" type="time" aria-label="センター帰着時刻"></div>
+      <div><label for="timeDepartInput">センター出発</label><input id="timeDepartInput" class="time-display" type="text" inputmode="none" readonly aria-label="センター出発時刻" title="距離入力時に自動記録されます"></div>
+      <div><label for="timeFirstInput">1件目到着</label><input id="timeFirstInput" class="time-display" type="text" inputmode="none" readonly aria-label="1件目到着時刻" title="距離入力時に自動記録されます"></div>
+      <div><label for="timeLastInput">最終納品</label><input id="timeLastInput" class="time-display" type="text" inputmode="none" readonly aria-label="最終納品時刻" title="距離入力時に自動記録されます"></div>
+      <div><label for="timeReturnInput">センター帰着</label><input id="timeReturnInput" class="time-display" type="text" inputmode="none" readonly aria-label="センター帰着時刻" title="距離入力時に自動記録されます"></div>
     </div>
     <label for="breakMinutes">休憩時間（分）</label><input id="breakMinutes" type="number" inputmode="numeric" min="0" step="1" placeholder="例：60">
   </section>
@@ -117,22 +117,28 @@ function update(){
  timeKeys.forEach(k=>{ if($(timeInputMap[k]).value!==(times[k]||'')) $(timeInputMap[k]).value=times[k]||''; });
 }
 const kmTimeMap={kmDepart:'depart',kmFirst:'first',kmLast:'last',kmReturn:'return'};
-['kmDepart','kmFirst','kmLast','kmReturn'].forEach(id=>$(id).addEventListener('input',()=>{
-  const timeKey=kmTimeMap[id];
-  if($(id).value.trim()!=='' && !times[timeKey]){
-    const d=new Date();
-    times[timeKey]=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    $('status').textContent=`距離入力に合わせて ${times[timeKey]} を自動記録しました`;
-  }
-  update();
-  scheduleDraftSave();
-}));
+['kmDepart','kmFirst','kmLast','kmReturn'].forEach(id=>{
+  // 距離欄を確定した時だけ時刻を更新。時刻欄自体は変更不可。
+  $(id).addEventListener('change',()=>{
+    const timeKey=kmTimeMap[id];
+    if($(id).value.trim()!==''){
+      const d=new Date();
+      times[timeKey]=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      $('status').textContent=`距離の変更に合わせて ${times[timeKey]} を記録しました`;
+    } else {
+      times[timeKey]='';
+    }
+    update();
+    scheduleDraftSave();
+  });
+  $(id).addEventListener('input',()=>{update();scheduleDraftSave()});
+});
 function setSaveIndicator(message,pending=false){$('saveIndicatorText').textContent=message;$('saveIndicator').classList.toggle('pending',pending)}
 function currentDraft(){return {fields:Object.fromEntries(fields.map(id=>[id,$(id).value])),times:{...times},editingId,updatedAt:new Date().toISOString()}}
 function scheduleDraftSave(){setSaveIndicator('入力内容を保存中…',true);if(draftTimer)clearTimeout(draftTimer);draftTimer=setTimeout(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify(currentDraft()));setSaveIndicator('入力内容を自動保存しました（この端末内）')}catch(e){setSaveIndicator('自動保存できません。保存ボタンとCSV書き出しを使ってください',true)}},250)}
 function restoreDraft(){try{const raw=localStorage.getItem(DRAFT_KEY);if(!raw){setSaveIndicator('自動保存オン：入力すると自動で保存されます');return}const d=JSON.parse(raw);if(d.fields&&typeof d.fields==='object')fields.forEach(id=>{if(d.fields[id]!==undefined)$(id).value=d.fields[id]});times={depart:'',first:'',last:'',return:'',...(d.times||{})};editingId=d.editingId||null;update();$('saveBtn').textContent=editingId?'変更を保存':'この日の記録を保存';setSaveIndicator('前回の入力途中データを復元しました（保存ボタンで記録一覧に登録）')}catch(e){setSaveIndicator('自動保存データを読み込めませんでした',true)}}
 fields.forEach(id=>{ $(id).addEventListener('input',scheduleDraftSave); $(id).addEventListener('change',scheduleDraftSave); });
-timeKeys.forEach(k=>$(timeInputMap[k]).addEventListener('change',()=>{times[k]=$(timeInputMap[k]).value||'';update();scheduleDraftSave()}));
+// 時刻表示欄は読み取り専用。時刻は距離欄の変更確定時にのみ更新します。
 window.addEventListener('pagehide',()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify(currentDraft()))}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){try{localStorage.setItem(DRAFT_KEY,JSON.stringify(currentDraft()))}catch(e){}}});
 function collect(){return {id:editingId||String(Date.now()),date:$('workDate').value||today(),route:$('routeName').value,vehicleNo:$('vehicleNo').value.trim(),employeeNo:$('employeeNo').value.trim(),times:{...times},breakMinutes:$('breakMinutes').value,kmDepart:$('kmDepart').value,kmFirst:$('kmFirst').value,kmLast:$('kmLast').value,kmReturn:$('kmReturn').value,fuelAmount:$('fuelAmount').value,fuelDistance:$('fuelDistance').value,updatedAt:new Date().toISOString()}}
