@@ -104,6 +104,7 @@ const timeKeys=['depart','first','last','return'];
 let times={depart:'',first:'',last:'',return:''}, editingId=null;
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 $('workDate').value=today();
+let autoDateAnchor=today();
 const num=id=>{const v=$(id).value;return v===''?null:Number(v)};
 const fmt=n=>n===null||!Number.isFinite(n)?'—':`${n.toLocaleString('ja-JP',{maximumFractionDigits:1})} km`;
 function diff(a,b){const x=num(a),y=num(b);return x!==null&&y!==null&&y>=x?y-x:null}
@@ -136,11 +137,16 @@ const kmTimeMap={kmDepart:'depart',kmFirst:'first',kmLast:'last',kmReturn:'retur
 function setSaveIndicator(message,pending=false){$('saveIndicatorText').textContent=message;$('saveIndicator').classList.toggle('pending',pending)}
 function currentDraft(){return {fields:Object.fromEntries(fields.map(id=>[id,$(id).value])),times:{...times},editingId,updatedAt:new Date().toISOString()}}
 function scheduleDraftSave(){setSaveIndicator('入力内容を保存中…',true);if(draftTimer)clearTimeout(draftTimer);draftTimer=setTimeout(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify(currentDraft()));setSaveIndicator('入力内容を自動保存しました（この端末内）')}catch(e){setSaveIndicator('自動保存できません。保存ボタンとCSV書き出しを使ってください',true)}},250)}
-function restoreDraft(){try{const raw=localStorage.getItem(DRAFT_KEY);if(!raw){setSaveIndicator('自動保存オン：入力すると自動で保存されます');return}const d=JSON.parse(raw);if(d.fields&&typeof d.fields==='object')fields.forEach(id=>{if(d.fields[id]!==undefined)$(id).value=d.fields[id]});times={depart:'',first:'',last:'',return:'',...(d.times||{})};editingId=d.editingId||null;update();$('saveBtn').textContent=editingId?'変更を保存':'この日の記録を保存';setSaveIndicator('前回の入力途中データを復元しました（保存ボタンで記録一覧に登録）')}catch(e){setSaveIndicator('自動保存データを読み込めませんでした',true)}}
+function restoreDraft(){try{const raw=localStorage.getItem(DRAFT_KEY);if(!raw){setSaveIndicator('自動保存オン：入力すると自動で保存されます');return}const d=JSON.parse(raw);if(d.fields&&typeof d.fields==='object')fields.forEach(id=>{if(d.fields[id]!==undefined)$(id).value=d.fields[id]});times={depart:'',first:'',last:'',return:'',...(d.times||{})};editingId=d.editingId||null;autoDateAnchor=today();if(!editingId && $('workDate').value && $('workDate').value!==today()){$('workDate').value=today();}update();$('saveBtn').textContent=editingId?'変更を保存':'この日の記録を保存';setSaveIndicator('前回の入力途中データを復元しました（保存ボタンで記録一覧に登録）');if(!editingId)scheduleDraftSave()}catch(e){setSaveIndicator('自動保存データを読み込めませんでした',true)}}
 fields.forEach(id=>{ $(id).addEventListener('input',scheduleDraftSave); $(id).addEventListener('change',scheduleDraftSave); });
 // 時刻表示欄は読み取り専用。時刻は距離欄の変更確定時にのみ更新します。
 window.addEventListener('pagehide',()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify(currentDraft()))}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){try{localStorage.setItem(DRAFT_KEY,JSON.stringify(currentDraft()))}catch(e){}}});
+// 日付が変わったら、編集中の過去記録は触らず、新規入力の日付だけ更新します。
+function refreshWorkDate(){const t=today();if(t===autoDateAnchor)return;if(!editingId && $('workDate').value===autoDateAnchor){$('workDate').value=t;scheduleDraftSave()}autoDateAnchor=t;}
+window.addEventListener('pageshow',refreshWorkDate);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshWorkDate()});
+setInterval(refreshWorkDate,30000);
 function collect(){return {id:editingId||String(Date.now()),date:$('workDate').value||today(),route:$('routeName').value,vehicleNo:$('vehicleNo').value.trim(),employeeNo:$('employeeNo').value.trim(),times:{...times},breakMinutes:$('breakMinutes').value,kmDepart:$('kmDepart').value,kmFirst:$('kmFirst').value,kmLast:$('kmLast').value,kmReturn:$('kmReturn').value,fuelAmount:$('fuelAmount').value,fuelDistance:$('fuelDistance').value,updatedAt:new Date().toISOString()}}
 function getRecords(){try{return JSON.parse(localStorage.getItem('truckDistanceTimeRecords')||'[]')}catch(e){return []}}
 function setRecords(a){localStorage.setItem('truckDistanceTimeRecords',JSON.stringify(a))}
