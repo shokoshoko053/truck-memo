@@ -169,7 +169,8 @@ function renderRecords(){
   el.innerHTML=`<div class="recordtop"><div><strong></strong><br><small></small></div><strong class="km"></strong></div><div class="recordstats"></div><div class="recordactions"><button class="secondary edit">編集</button><button class="danger delete">削除</button></div>`;
   el.querySelector('strong').textContent=r.date||'日付なし';el.querySelector('small').textContent=r.route||'コース名なし';el.querySelector('.km').textContent=km;
   const stats=el.querySelector('.recordstats');
-  stats.textContent=`車番 ${r.vehicleNo||'—'}　社員番号 ${r.employeeNo||'—'}\n出発 ${t.depart||'—'}　1件目 ${t.first||'—'}\n最終 ${t.last||'—'}　帰着 ${t.return||'—'}\n休憩 ${r.breakMinutes||'—'} 分`;
+  const point=(time,km)=>`${time||'—'} / ${km!==undefined&&km!==null&&km!==''?fmt(Number(km))+' km':'距離—'}`;
+  stats.textContent=`車番 ${r.vehicleNo||'—'}　社員番号 ${r.employeeNo||'—'}\n出発 ${point(t.depart,r.kmDepart)}\n1件目 ${point(t.first,r.kmFirst)}\n最終納品 ${point(t.last,r.kmLast)}\n帰着 ${point(t.return,r.kmReturn)}\n休憩 ${r.breakMinutes||'—'} 分`;
   stats.style.whiteSpace='pre-line';
   el.querySelector('.edit').onclick=()=>loadRecord(r);
   el.querySelector('.delete').onclick=()=>{if(confirm(`${r.date} の記録を削除しますか？`)){setRecords(getRecords().filter(x=>x.id!==r.id));renderRecords()}};
